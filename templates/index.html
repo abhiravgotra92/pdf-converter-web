@@ -3,308 +3,559 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Webpage to PDF Converter</title>
+  <title>WebDocs — Convert Anything</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:      #09090b;
+      --surface: #111113;
+      --border:  #1e1e24;
+      --muted:   #6b7280;
+      --text:    #f1f5f9;
+      --dim:     #374151;
+      --accent:  #f97316;
+      --green:   #22c55e;
+      --red:     #ef4444;
+      --radius:  14px;
+    }
 
     body {
       min-height: 100vh;
-      background: #0a0a0f;
-      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 2rem 1rem;
-      background-image: radial-gradient(ellipse at 20% 50%, #1a0a00 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 20%, #001a33 0%, transparent 50%);
-      color: #f1f5f9;
+      padding: 3rem 1rem 4rem;
+      background-image:
+        radial-gradient(ellipse at 15% 40%, rgba(249,115,22,.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 15%, rgba(59,130,246,.05) 0%, transparent 55%);
     }
 
-    .card {
-      background: #111118;
-      border: 1px solid #1f1f2e;
-      border-radius: 20px;
-      padding: 2.5rem 2rem;
-      width: 100%;
-      max-width: 520px;
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 2.5rem; }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: 1.75rem;
+      font-weight: 900;
+      letter-spacing: -.04em;
+      margin-bottom: .5rem;
     }
-
-    .icon-wrap {
-      width: 64px; height: 64px;
-      border-radius: 16px;
-      background: color-mix(in srgb, #fb923c 15%, transparent);
-      border: 1px solid color-mix(in srgb, #fb923c 30%, transparent);
-      color: #fb923c;
-      font-size: 1.8rem;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 1.2rem;
-    }
-
-    h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.3rem; }
-    .subtitle { color: #6b7280; font-size: 0.875rem; margin-bottom: 2rem; }
-
-    label { display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 0.4rem; }
-
-    input {
-      width: 100%;
-      background: #0a0a0f;
-      border: 1px solid #1f1f2e;
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: var(--accent);
       border-radius: 10px;
-      padding: 0.75rem 1rem;
-      color: #f1f5f9;
-      font-size: 0.95rem;
-      margin-bottom: 1rem;
-      outline: none;
-      transition: border-color 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      color: #fff;
     }
-    input:focus { border-color: #fb923c; }
+    .logo span { color: var(--accent); }
 
-    button#convert-btn {
+    header p { color: var(--muted); font-size: .9rem; max-width: 420px; margin: 0 auto; line-height: 1.6; }
+
+    /* ── Tab bar ── */
+    .tabs {
+      display: flex;
+      gap: .4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .35rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
       width: 100%;
-      background: #fb923c;
-      color: #0a0a0f;
+      max-width: 580px;
+    }
+
+    .tab {
+      flex: 1;
+      min-width: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      padding: .55rem .75rem;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text); background: rgba(255,255,255,.05); }
+    .tab.active { background: var(--accent); color: #fff; }
+    .tab i { font-size: .75rem; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 580px;
+    }
+
+    .tool-header { margin-bottom: 1.5rem; }
+    .tool-header h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: .25rem; }
+    .tool-header p  { color: var(--muted); font-size: .82rem; line-height: 1.5; }
+
+    /* ── Inputs ── */
+    label { display: block; font-size: .78rem; color: #9ca3af; margin-bottom: .35rem; font-weight: 500; }
+
+    input[type="url"], input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      color: var(--text);
+      font-size: .9rem;
+      outline: none;
+      transition: border-color .2s;
+      font-family: inherit;
+    }
+    input:focus { border-color: var(--accent); }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 2rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(249,115,22,.04);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-zone i { font-size: 1.8rem; color: var(--muted); margin-bottom: .5rem; display: block; }
+    .drop-zone p { color: var(--muted); font-size: .82rem; }
+    .drop-zone p strong { color: var(--accent); }
+    .file-list { margin-top: .75rem; font-size: .78rem; color: #9ca3af; text-align: left; }
+    .file-list div { padding: .2rem 0; display: flex; align-items: center; gap: .4rem; }
+    .file-list i { color: var(--accent); font-size: .7rem; }
+
+    /* ── Convert button ── */
+    .convert-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
       border: none;
       border-radius: 10px;
-      padding: 0.85rem;
-      font-size: 1rem;
+      padding: .85rem;
+      font-size: .95rem;
       font-weight: 700;
       cursor: pointer;
-      transition: opacity 0.2s;
+      margin-top: 1rem;
+      transition: opacity .2s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
     }
-    button#convert-btn:hover { opacity: 0.85; }
-    button#convert-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .convert-btn:hover { opacity: .88; }
+    .convert-btn:active { transform: scale(.98); }
+    .convert-btn:disabled { opacity: .35; cursor: not-allowed; }
 
+    /* ── Status box ── */
     .status-box {
-      margin-top: 1.5rem;
-      background: #0a0a0f;
-      border: 1px solid #1f1f2e;
+      margin-top: 1.25rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 1rem 1.2rem;
-      font-size: 0.875rem;
-      color: #9ca3af;
+      padding: 1rem 1.1rem;
+      font-size: .82rem;
+      color: var(--muted);
       display: none;
     }
-
     .status-box.visible { display: block; }
 
     .status-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.75rem;
+      margin-bottom: .6rem;
     }
-
-    #progress-text { color: #f1f5f9; font-weight: 600; }
+    .progress-text { color: var(--text); font-weight: 600; font-size: .85rem; }
+    .progress-text.error { color: var(--red); }
 
     .eta-badge {
-      font-size: 0.75rem;
+      font-size: .7rem;
       font-weight: 600;
-      padding: 2px 10px;
+      padding: 2px 9px;
       border-radius: 99px;
-      background: color-mix(in srgb, #fb923c 15%, transparent);
-      color: #fb923c;
-      border: 1px solid color-mix(in srgb, #fb923c 30%, transparent);
+      background: rgba(249,115,22,.12);
+      color: var(--accent);
+      border: 1px solid rgba(249,115,22,.25);
     }
 
-    .stats {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin: 0.75rem 0;
-      font-size: 0.8rem;
-      color: #6b7280;
-    }
+    .bar-wrap { background: var(--border); border-radius: 99px; height: 5px; overflow: hidden; margin-bottom: .75rem; }
+    .bar { height: 100%; background: var(--accent); border-radius: 99px; width: 0%; transition: width .4s; }
+    .bar.indeterminate { width: 35%; animation: slide 1.2s infinite ease-in-out; }
+    @keyframes slide { 0%{margin-left:-35%} 100%{margin-left:100%} }
 
-    .stat { display: flex; align-items: center; gap: 0.35rem; }
-    .stat i { color: #fb923c; font-size: 0.75rem; }
+    .stats { display: flex; gap: .75rem; flex-wrap: wrap; font-size: .75rem; color: var(--muted); margin-bottom: .4rem; }
+    .stat { display: flex; align-items: center; gap: .3rem; }
+    .stat i { color: var(--accent); font-size: .7rem; }
 
-    .current-url {
-      font-size: 0.7rem;
-      color: #374151;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-top: 0.25rem;
-    }
+    .current-url { font-size: .68rem; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .bar-wrap {
-      background: #1f1f2e;
-      border-radius: 99px;
-      height: 6px;
-      overflow: hidden;
-      margin-bottom: 1rem;
-    }
-    .bar {
-      height: 100%;
-      background: #fb923c;
-      border-radius: 99px;
-      width: 0%;
-      transition: width 0.4s;
-    }
-    .bar.indeterminate {
-      width: 40%;
-      animation: slide 1.2s infinite ease-in-out;
-    }
-    @keyframes slide {
-      0%   { margin-left: -40%; }
-      100% { margin-left: 100%; }
-    }
-
-    .error-text { color: #f87171; }
-
-    #download-btn {
+    /* ── Download button ── */
+    .download-btn {
       display: none;
       width: 100%;
-      background: #22c55e;
-      color: #0a0a0f;
+      background: var(--green);
+      color: #fff;
       border: none;
       border-radius: 10px;
-      padding: 0.85rem;
-      font-size: 1rem;
+      padding: .85rem;
+      font-size: .95rem;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 0.5rem;
-      transition: opacity 0.2s;
+      margin-top: .75rem;
       text-decoration: none;
       text-align: center;
+      transition: opacity .2s;
     }
-    #download-btn:hover { opacity: 0.85; }
-    #download-btn.visible { display: block; }
+    .download-btn:hover { opacity: .88; }
+    .download-btn.visible { display: flex; align-items: center; justify-content: center; gap: .5rem; }
 
-    footer { margin-top: 2rem; color: #374151; font-size: 0.8rem; }
-    footer a { color: #4b5563; }
+    /* ── Tool panels ── */
+    .tool-panel { display: none; }
+    .tool-panel.active { display: block; }
+
+    /* ── Footer ── */
+    footer { margin-top: 2.5rem; color: var(--dim); font-size: .78rem; text-align: center; }
+    footer a { color: #4b5563; text-decoration: none; }
+    footer a:hover { color: var(--muted); }
+
+    @media (max-width: 480px) {
+      .tab { min-width: 100px; font-size: .75rem; padding: .5rem .5rem; }
+      .card { padding: 1.5rem 1.25rem; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <div class="icon-wrap"><i class="fa-solid fa-file-pdf"></i></div>
-    <h1>Webpage to PDF Converter</h1>
-    <p class="subtitle">Paste any website URL and we'll crawl every page, capture images, and bundle it all into a structured, downloadable PDF — complete with a cover page and table of contents.</p>
+  <header>
+    <div class="logo">
+      <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+      Web<span>Docs</span>
+    </div>
+    <p>Convert webpages and images into PDF or Word documents — instantly.</p>
+  </header>
 
-    <label for="url-input">Website URL</label>
-    <input id="url-input" type="url" placeholder="https://docs.example.com" />
-
-    <button id="convert-btn" onclick="startConvert()">
-      <i class="fa-solid fa-wand-magic-sparkles"></i>&nbsp; Convert to PDF
+  <!-- Tab bar -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('webpage-pdf', this)">
+      <i class="fa-solid fa-globe"></i> Webpage → PDF
     </button>
+    <button class="tab" onclick="switchTab('webpage-doc', this)">
+      <i class="fa-solid fa-file-word"></i> Webpage → Doc
+    </button>
+    <button class="tab" onclick="switchTab('image-pdf', this)">
+      <i class="fa-solid fa-image"></i> Image → PDF
+    </button>
+    <button class="tab" onclick="switchTab('image-doc', this)">
+      <i class="fa-solid fa-file-lines"></i> Image → Doc
+    </button>
+  </div>
 
-    <div class="status-box" id="status-box">
-      <div class="status-header">
-        <span id="progress-text">Starting...</span>
-        <span id="eta-badge" class="eta-badge"></span>
+  <div class="card">
+
+    <!-- ── Tool 1: Webpage → PDF ── -->
+    <div class="tool-panel active" id="panel-webpage-pdf">
+      <div class="tool-header">
+        <h2><i class="fa-solid fa-globe" style="color:var(--accent);margin-right:.4rem;"></i>Webpage to PDF</h2>
+        <p>Crawls every page of a website and bundles it into a structured PDF with cover page, table of contents, and images.</p>
       </div>
-      <div class="bar-wrap"><div class="bar indeterminate" id="bar"></div></div>
-      <div class="stats" id="stats" style="display:none">
-        <div class="stat"><i class="fa-solid fa-file"></i> <span id="stat-pages">0 / 0 pages</span></div>
-        <div class="stat"><i class="fa-solid fa-gauge-high"></i> <span id="stat-rate">0 pages/s</span></div>
-        <div class="stat"><i class="fa-solid fa-clock"></i> <span id="stat-elapsed">0s elapsed</span></div>
+      <label for="url-pdf">Website URL</label>
+      <input id="url-pdf" type="url" placeholder="https://docs.example.com" />
+      <button class="convert-btn" id="btn-webpage-pdf" onclick="startWebJob('webpage-pdf')">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Convert to PDF
+      </button>
+      <div class="status-box" id="status-webpage-pdf">
+        <div class="status-header">
+          <span class="progress-text" id="prog-webpage-pdf">Starting...</span>
+          <span class="eta-badge" id="eta-webpage-pdf"></span>
+        </div>
+        <div class="bar-wrap"><div class="bar indeterminate" id="bar-webpage-pdf"></div></div>
+        <div class="stats" id="stats-webpage-pdf" style="display:none">
+          <div class="stat"><i class="fa-solid fa-file"></i><span id="pages-webpage-pdf">0/0</span></div>
+          <div class="stat"><i class="fa-solid fa-gauge-high"></i><span id="rate-webpage-pdf">0/s</span></div>
+          <div class="stat"><i class="fa-solid fa-clock"></i><span id="elapsed-webpage-pdf">0s</span></div>
+        </div>
+        <div class="current-url" id="curl-webpage-pdf"></div>
       </div>
-      <div class="current-url" id="current-url"></div>
+      <a class="download-btn" id="dl-webpage-pdf" href="#">
+        <i class="fa-solid fa-download"></i> Download PDF
+      </a>
     </div>
 
-    <a id="download-btn" href="#"><i class="fa-solid fa-download"></i>&nbsp; Download PDF</a>
+    <!-- ── Tool 2: Webpage → Doc ── -->
+    <div class="tool-panel" id="panel-webpage-doc">
+      <div class="tool-header">
+        <h2><i class="fa-solid fa-file-word" style="color:var(--accent);margin-right:.4rem;"></i>Webpage to Doc</h2>
+        <p>Crawls a website and exports all content — text, headings, and images — into a structured Word (.docx) document.</p>
+      </div>
+      <label for="url-doc">Website URL</label>
+      <input id="url-doc" type="url" placeholder="https://docs.example.com" />
+      <button class="convert-btn" id="btn-webpage-doc" onclick="startWebJob('webpage-doc')">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Convert to Doc
+      </button>
+      <div class="status-box" id="status-webpage-doc">
+        <div class="status-header">
+          <span class="progress-text" id="prog-webpage-doc">Starting...</span>
+          <span class="eta-badge" id="eta-webpage-doc"></span>
+        </div>
+        <div class="bar-wrap"><div class="bar indeterminate" id="bar-webpage-doc"></div></div>
+        <div class="stats" id="stats-webpage-doc" style="display:none">
+          <div class="stat"><i class="fa-solid fa-file"></i><span id="pages-webpage-doc">0/0</span></div>
+          <div class="stat"><i class="fa-solid fa-gauge-high"></i><span id="rate-webpage-doc">0/s</span></div>
+          <div class="stat"><i class="fa-solid fa-clock"></i><span id="elapsed-webpage-doc">0s</span></div>
+        </div>
+        <div class="current-url" id="curl-webpage-doc"></div>
+      </div>
+      <a class="download-btn" id="dl-webpage-doc" href="#">
+        <i class="fa-solid fa-download"></i> Download Doc
+      </a>
+    </div>
+
+    <!-- ── Tool 3: Image → PDF ── -->
+    <div class="tool-panel" id="panel-image-pdf">
+      <div class="tool-header">
+        <h2><i class="fa-solid fa-image" style="color:var(--accent);margin-right:.4rem;"></i>Image to PDF</h2>
+        <p>Upload one or more images and convert them into a single PDF. Each image gets its own page, centred on A4.</p>
+      </div>
+      <div class="drop-zone" id="drop-image-pdf" ondragover="onDrag(event,this)" ondragleave="offDrag(this)" ondrop="onDrop(event,'image-pdf')">
+        <input type="file" id="files-image-pdf" accept="image/*" multiple onchange="onFiles('image-pdf')" />
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <p><strong>Click to upload</strong> or drag & drop</p>
+        <p style="margin-top:.25rem;font-size:.72rem;">PNG, JPG, WEBP, GIF — multiple files supported</p>
+      </div>
+      <div class="file-list" id="list-image-pdf"></div>
+      <button class="convert-btn" id="btn-image-pdf" onclick="startImageJob('image-pdf')">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Convert to PDF
+      </button>
+      <div class="status-box" id="status-image-pdf">
+        <div class="status-header">
+          <span class="progress-text" id="prog-image-pdf">Converting...</span>
+        </div>
+        <div class="bar-wrap"><div class="bar indeterminate" id="bar-image-pdf"></div></div>
+      </div>
+      <a class="download-btn" id="dl-image-pdf" href="#">
+        <i class="fa-solid fa-download"></i> Download PDF
+      </a>
+    </div>
+
+    <!-- ── Tool 4: Image → Doc ── -->
+    <div class="tool-panel" id="panel-image-doc">
+      <div class="tool-header">
+        <h2><i class="fa-solid fa-file-lines" style="color:var(--accent);margin-right:.4rem;"></i>Image to Doc</h2>
+        <p>Upload images and export them into a Word document. Images are embedded per page, with OCR text extracted below each one.</p>
+      </div>
+      <div class="drop-zone" id="drop-image-doc" ondragover="onDrag(event,this)" ondragleave="offDrag(this)" ondrop="onDrop(event,'image-doc')">
+        <input type="file" id="files-image-doc" accept="image/*" multiple onchange="onFiles('image-doc')" />
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <p><strong>Click to upload</strong> or drag & drop</p>
+        <p style="margin-top:.25rem;font-size:.72rem;">PNG, JPG, WEBP — OCR text will be extracted automatically</p>
+      </div>
+      <div class="file-list" id="list-image-doc"></div>
+      <button class="convert-btn" id="btn-image-doc" onclick="startImageJob('image-doc')">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Convert to Doc
+      </button>
+      <div class="status-box" id="status-image-doc">
+        <div class="status-header">
+          <span class="progress-text" id="prog-image-doc">Converting...</span>
+        </div>
+        <div class="bar-wrap"><div class="bar indeterminate" id="bar-image-doc"></div></div>
+      </div>
+      <a class="download-btn" id="dl-image-doc" href="#">
+        <i class="fa-solid fa-download"></i> Download Doc
+      </a>
+    </div>
+
   </div>
 
   <footer>
-    <a href="https://abhiravgotra92.github.io/projects-hub/" target="_blank">← Back to Projects Hub</a>
+    <a href="https://abhiravgotra92.github.io/AR-test-AI/" target="_blank">← Back to Projects Hub</a>
   </footer>
 
-  <script>
-    let pollTimer = null;
+<script>
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  function switchTab(tool, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + tool).classList.add('active');
+  }
 
-    async function startConvert() {
-      const url  = document.getElementById('url-input').value.trim();
-      const btn  = document.getElementById('convert-btn');
-      const box  = document.getElementById('status-box');
-      const dlBtn = document.getElementById('download-btn');
+  // ── Drag & drop ────────────────────────────────────────────────────────────
+  function onDrag(e, el) { e.preventDefault(); el.classList.add('drag-over'); }
+  function offDrag(el)   { el.classList.remove('drag-over'); }
+  function onDrop(e, tool) {
+    e.preventDefault();
+    offDrag(document.getElementById('drop-' + tool));
+    const input = document.getElementById('files-' + tool);
+    const dt = new DataTransfer();
+    Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+    input.files = dt.files;
+    onFiles(tool);
+  }
 
-      dlBtn.classList.remove('visible');
-      box.classList.add('visible');
-      setProgress('Submitting job...', null);
-      btn.disabled = true;
+  function onFiles(tool) {
+    const files = document.getElementById('files-' + tool).files;
+    const list  = document.getElementById('list-' + tool);
+    list.innerHTML = Array.from(files).map(f =>
+      `<div><i class="fa-solid fa-image"></i>${f.name} <span style="color:var(--dim)">(${(f.size/1024).toFixed(1)} KB)</span></div>`
+    ).join('');
+  }
 
+  // ── Webpage jobs (async polling) ───────────────────────────────────────────
+  const pollTimers = {};
+
+  async function startWebJob(tool) {
+    const urlId  = tool === 'webpage-pdf' ? 'url-pdf' : 'url-doc';
+    const url    = document.getElementById(urlId).value.trim();
+    const btn    = document.getElementById('btn-' + tool);
+    const dlBtn  = document.getElementById('dl-' + tool);
+    const status = document.getElementById('status-' + tool);
+
+    dlBtn.classList.remove('visible');
+    status.classList.add('visible');
+    setWebProg(tool, 'Submitting...', false);
+    btn.disabled = true;
+
+    try {
+      const endpoint = tool === 'webpage-pdf' ? '/convert/webpage-pdf' : '/convert/webpage-doc';
+      const res  = await fetch(endpoint, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url})
+      });
+      const data = await res.json();
+      if (!res.ok) { setWebProg(tool, data.error || 'Error.', true); btn.disabled = false; return; }
+      pollJob(tool, data.job_id);
+    } catch(e) {
+      setWebProg(tool, 'Network error. Try again.', true);
+      btn.disabled = false;
+    }
+  }
+
+  function pollJob(tool, jobId) {
+    clearInterval(pollTimers[tool]);
+    pollTimers[tool] = setInterval(async () => {
       try {
-        const res  = await fetch('/convert', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({url})
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-          setProgress(data.error || 'Error.', false, 'error');
-          btn.disabled = false;
-          return;
-        }
-
-        pollStatus(data.job_id);
-      } catch (e) {
-        setProgress('Network error. Try again.', false, 'error');
-        btn.disabled = false;
-      }
-    }
-
-    function pollStatus(jobId) {
-      clearInterval(pollTimer);
-      pollTimer = setInterval(async () => {
-        try {
-          const res  = await fetch('/status/' + jobId);
-          const data = await res.json();
-
-          if (data.status === 'running' || data.status === 'queued') {
-            setProgress(data.progress || 'Working...');
-            if (data.done > 0) {
-              document.getElementById('stats').style.display = 'flex';
-              document.getElementById('stat-pages').textContent   = `${data.done} / ${data.total} pages`;
-              document.getElementById('stat-rate').textContent    = `${data.rate} pages/s`;
-              document.getElementById('stat-elapsed').textContent = formatTime(data.elapsed);
-              document.getElementById('eta-badge').textContent    = `ETA: ${data.eta}`;
-              document.getElementById('current-url').textContent  = data.current_url || '';
-              const pct = data.total > 0 ? Math.round((data.done / data.total) * 100) : 0;
-              const bar = document.getElementById('bar');
-              bar.classList.remove('indeterminate');
-              bar.style.width = pct + '%';
-            }
-          } else if (data.status === 'done') {
-            clearInterval(pollTimer);
-            const elapsed = formatTime(data.elapsed);
-            setProgress(`✅ Done! Crawled ${data.done || ''} pages in ${elapsed}`);
-            document.getElementById('bar').style.width = '100%';
-            document.getElementById('bar').classList.remove('indeterminate');
-            document.getElementById('eta-badge').textContent   = '';
-            document.getElementById('current-url').textContent = '';
-            const dlBtn = document.getElementById('download-btn');
-            dlBtn.href = '/download/' + jobId;
-            dlBtn.classList.add('visible');
-            document.getElementById('convert-btn').disabled = false;
-          } else if (data.status === 'error') {
-            clearInterval(pollTimer);
-            setProgress('❌ Error: ' + (data.error || 'Unknown error.'), 'error');
-            document.getElementById('convert-btn').disabled = false;
+        const data = await fetch('/status/' + jobId).then(r => r.json());
+        if (data.status === 'running' || data.status === 'queued') {
+          setWebProg(tool, data.progress || 'Working...');
+          if (data.done > 0) {
+            document.getElementById('stats-' + tool).style.display = 'flex';
+            document.getElementById('pages-' + tool).textContent   = `${data.done}/${data.total} pages`;
+            document.getElementById('rate-' + tool).textContent    = `${data.rate}/s`;
+            document.getElementById('elapsed-' + tool).textContent = fmt(data.elapsed);
+            document.getElementById('eta-' + tool).textContent     = `ETA: ${data.eta}`;
+            document.getElementById('curl-' + tool).textContent    = data.current_url || '';
+            const pct = data.total > 0 ? Math.round(data.done / data.total * 100) : 0;
+            const bar = document.getElementById('bar-' + tool);
+            bar.classList.remove('indeterminate');
+            bar.style.width = pct + '%';
           }
-        } catch (e) {}
-      }, 2000);
-    }
+        } else if (data.status === 'done') {
+          clearInterval(pollTimers[tool]);
+          setWebProg(tool, `✅ Done! ${data.done || ''} pages in ${fmt(data.elapsed)}`);
+          document.getElementById('bar-' + tool).style.width = '100%';
+          document.getElementById('bar-' + tool).classList.remove('indeterminate');
+          document.getElementById('eta-' + tool).textContent = '';
+          document.getElementById('curl-' + tool).textContent = '';
+          const dlBtn = document.getElementById('dl-' + tool);
+          dlBtn.href = '/download/' + jobId;
+          dlBtn.classList.add('visible');
+          document.getElementById('btn-' + tool).disabled = false;
+        } else if (data.status === 'error') {
+          clearInterval(pollTimers[tool]);
+          setWebProg(tool, '❌ ' + (data.error || 'Unknown error.'), true);
+          document.getElementById('btn-' + tool).disabled = false;
+        }
+      } catch(e) {}
+    }, 2000);
+  }
 
-    function formatTime(secs) {
-      if (!secs) return '0s';
-      return secs >= 60 ? `${Math.floor(secs/60)}m ${secs%60}s` : `${secs}s`;
-    }
+  function setWebProg(tool, text, isError = false) {
+    const el = document.getElementById('prog-' + tool);
+    el.textContent = text;
+    el.className = 'progress-text' + (isError ? ' error' : '');
+    const bar = document.getElementById('bar-' + tool);
+    if (isError) bar.classList.remove('indeterminate');
+    else bar.classList.add('indeterminate');
+  }
 
-    function setProgress(text, type) {
-      const p = document.getElementById('progress-text');
-      p.textContent = text;
-      p.style.color = type === 'error' ? '#f87171' : '#f1f5f9';
-      if (type !== 'error') {
-        document.getElementById('bar').classList.add('indeterminate');
-      } else {
-        document.getElementById('bar').classList.remove('indeterminate');
+  // ── Image jobs (direct upload) ─────────────────────────────────────────────
+  async function startImageJob(tool) {
+    const files  = document.getElementById('files-' + tool).files;
+    const btn    = document.getElementById('btn-' + tool);
+    const dlBtn  = document.getElementById('dl-' + tool);
+    const status = document.getElementById('status-' + tool);
+
+    if (!files.length) { alert('Please select at least one image.'); return; }
+
+    dlBtn.classList.remove('visible');
+    status.classList.add('visible');
+    document.getElementById('prog-' + tool).textContent = 'Converting...';
+    btn.disabled = true;
+
+    const form = new FormData();
+    Array.from(files).forEach(f => form.append('images', f));
+
+    try {
+      const endpoint = tool === 'image-pdf' ? '/convert/image-pdf' : '/convert/image-doc';
+      const res = await fetch(endpoint, { method: 'POST', body: form });
+      if (!res.ok) {
+        const err = await res.json();
+        document.getElementById('prog-' + tool).textContent = '❌ ' + (err.error || 'Error.');
+        document.getElementById('prog-' + tool).className = 'progress-text error';
+        document.getElementById('bar-' + tool).classList.remove('indeterminate');
+        btn.disabled = false;
+        return;
       }
+      const blob = await res.blob();
+      const ext  = tool === 'image-pdf' ? 'pdf' : 'docx';
+      const url  = URL.createObjectURL(blob);
+      document.getElementById('prog-' + tool).textContent = '✅ Done!';
+      document.getElementById('bar-' + tool).style.width = '100%';
+      document.getElementById('bar-' + tool).classList.remove('indeterminate');
+      dlBtn.href = url;
+      dlBtn.download = `webdocs_images.${ext}`;
+      dlBtn.classList.add('visible');
+      btn.disabled = false;
+    } catch(e) {
+      document.getElementById('prog-' + tool).textContent = '❌ Network error.';
+      document.getElementById('prog-' + tool).className = 'progress-text error';
+      btn.disabled = false;
     }
-  </script>
+  }
+
+  function fmt(s) {
+    if (!s) return '0s';
+    return s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
+  }
+</script>
 
 </body>
 </html>
