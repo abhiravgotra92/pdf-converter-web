@@ -45,8 +45,6 @@ def convert():
     password = (data or {}).get('password', '')
     url      = (data or {}).get('url', '').strip()
 
-    if password != APP_PASSWORD:
-        return jsonify({'error': 'Incorrect password.'}), 403
     if not url:
         return jsonify({'error': 'URL is required.'}), 400
     if not url.startswith(('http://', 'https://')):

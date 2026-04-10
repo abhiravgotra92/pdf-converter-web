@@ -146,9 +146,6 @@
     <h1>PDF Converter</h1>
     <p class="subtitle">Crawls any documentation website and converts it to a downloadable PDF.</p>
 
-    <label for="pass-input">Password</label>
-    <input id="pass-input" type="password" placeholder="Enter password..." />
-
     <label for="url-input">Website URL</label>
     <input id="url-input" type="url" placeholder="https://docs.example.com" />
 
@@ -172,7 +169,6 @@
     let pollTimer = null;
 
     async function startConvert() {
-      const pass = document.getElementById('pass-input').value;
       const url  = document.getElementById('url-input').value.trim();
       const btn  = document.getElementById('convert-btn');
       const box  = document.getElementById('status-box');
@@ -187,7 +183,7 @@
         const res  = await fetch('/convert', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({password: pass, url})
+          body: JSON.stringify({url})
         });
         const data = await res.json();
 
