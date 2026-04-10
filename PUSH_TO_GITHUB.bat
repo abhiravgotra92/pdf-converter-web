@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo  PDF Web App - Push to GitHub
+echo  Webpage to PDF Converter - Push to GitHub
 echo ============================================
 echo.
 echo Step 1: Go to https://github.com/new
