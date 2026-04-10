@@ -19,16 +19,32 @@ job_lock = threading.Lock()
 
 
 def run_job(job_id, url, work_dir):
-    def progress_cb(done, total):
+    import time
+    start_time = time.time()
+
+    def progress_cb(done, total, current_url=''):
+        elapsed = time.time() - start_time
+        rate    = done / elapsed if elapsed > 0 else 0
+        eta     = int((total - done) / rate) if rate > 0 and total > done else 0
+        eta_str = f'{eta // 60}m {eta % 60}s' if eta >= 60 else f'{eta}s'
         with job_lock:
-            jobs[job_id]['progress'] = f"Crawled {done} / {total} pages..."
+            jobs[job_id].update({
+                'progress': f'Crawling page {done} of {total}',
+                'current_url': current_url,
+                'done': done,
+                'total': total,
+                'elapsed': int(elapsed),
+                'eta': eta_str if done > 0 else 'Calculating...',
+                'rate': round(rate, 2),
+            })
 
     try:
         with job_lock:
             jobs[job_id]['status'] = 'running'
         pdf_path, domain = asyncio.run(crawler.run(url, work_dir, progress_cb))
+        elapsed = int(time.time() - start_time)
         with job_lock:
-            jobs[job_id].update({'status': 'done', 'pdf_path': pdf_path, 'domain': domain})
+            jobs[job_id].update({'status': 'done', 'pdf_path': pdf_path, 'domain': domain, 'elapsed': elapsed})
     except Exception as e:
         with job_lock:
             jobs[job_id].update({'status': 'error', 'error': str(e)})
@@ -69,10 +85,16 @@ def status(job_id):
     if not job:
         return jsonify({'error': 'Job not found.'}), 404
     return jsonify({
-        'status':   job['status'],
-        'progress': job.get('progress', ''),
-        'domain':   job.get('domain', ''),
-        'error':    job.get('error', ''),
+        'status':      job['status'],
+        'progress':    job.get('progress', ''),
+        'current_url': job.get('current_url', ''),
+        'done':        job.get('done', 0),
+        'total':       job.get('total', 0),
+        'elapsed':     job.get('elapsed', 0),
+        'eta':         job.get('eta', ''),
+        'rate':        job.get('rate', 0),
+        'domain':      job.get('domain', ''),
+        'error':       job.get('error', ''),
     })
 
 

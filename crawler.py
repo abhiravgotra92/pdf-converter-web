@@ -271,7 +271,7 @@ async def crawl(cfg, progress_cb=None):
                     if link not in queued:
                         queued.add(link); queue.append(link)
             if progress_cb:
-                progress_cb(len(visited), min(len(queue), MAX_PAGES))
+                progress_cb(len(visited), min(len(queue), MAX_PAGES), batch[-1])
 
         await browser.close()
     return visited

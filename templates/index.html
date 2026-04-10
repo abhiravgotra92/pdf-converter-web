@@ -89,7 +89,45 @@
 
     .status-box.visible { display: block; }
 
-    .progress-text { margin-bottom: 0.75rem; }
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    #progress-text { color: #f1f5f9; font-weight: 600; }
+
+    .eta-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 99px;
+      background: color-mix(in srgb, #fb923c 15%, transparent);
+      color: #fb923c;
+      border: 1px solid color-mix(in srgb, #fb923c 30%, transparent);
+    }
+
+    .stats {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 0.75rem 0;
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    .stat { display: flex; align-items: center; gap: 0.35rem; }
+    .stat i { color: #fb923c; font-size: 0.75rem; }
+
+    .current-url {
+      font-size: 0.7rem;
+      color: #374151;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 0.25rem;
+    }
 
     .bar-wrap {
       background: #1f1f2e;
@@ -154,8 +192,17 @@
     </button>
 
     <div class="status-box" id="status-box">
-      <div class="progress-text" id="progress-text">Starting...</div>
+      <div class="status-header">
+        <span id="progress-text">Starting...</span>
+        <span id="eta-badge" class="eta-badge"></span>
+      </div>
       <div class="bar-wrap"><div class="bar indeterminate" id="bar"></div></div>
+      <div class="stats" id="stats" style="display:none">
+        <div class="stat"><i class="fa-solid fa-file"></i> <span id="stat-pages">0 / 0 pages</span></div>
+        <div class="stat"><i class="fa-solid fa-gauge-high"></i> <span id="stat-rate">0 pages/s</span></div>
+        <div class="stat"><i class="fa-solid fa-clock"></i> <span id="stat-elapsed">0s elapsed</span></div>
+      </div>
+      <div class="current-url" id="current-url"></div>
     </div>
 
     <a id="download-btn" href="#"><i class="fa-solid fa-download"></i>&nbsp; Download PDF</a>
@@ -176,7 +223,7 @@
 
       dlBtn.classList.remove('visible');
       box.classList.add('visible');
-      setProgress('Submitting job...', true, '');
+      setProgress('Submitting job...', null);
       btn.disabled = true;
 
       try {
@@ -208,36 +255,53 @@
           const data = await res.json();
 
           if (data.status === 'running' || data.status === 'queued') {
-            setProgress(data.progress || 'Working...', true, '');
+            setProgress(data.progress || 'Working...');
+            if (data.done > 0) {
+              document.getElementById('stats').style.display = 'flex';
+              document.getElementById('stat-pages').textContent   = `${data.done} / ${data.total} pages`;
+              document.getElementById('stat-rate').textContent    = `${data.rate} pages/s`;
+              document.getElementById('stat-elapsed').textContent = formatTime(data.elapsed);
+              document.getElementById('eta-badge').textContent    = `ETA: ${data.eta}`;
+              document.getElementById('current-url').textContent  = data.current_url || '';
+              const pct = data.total > 0 ? Math.round((data.done / data.total) * 100) : 0;
+              const bar = document.getElementById('bar');
+              bar.classList.remove('indeterminate');
+              bar.style.width = pct + '%';
+            }
           } else if (data.status === 'done') {
             clearInterval(pollTimer);
-            setProgress('Done! Your PDF is ready.', false, '');
+            const elapsed = formatTime(data.elapsed);
+            setProgress(`✅ Done! Crawled ${data.done || ''} pages in ${elapsed}`);
             document.getElementById('bar').style.width = '100%';
             document.getElementById('bar').classList.remove('indeterminate');
+            document.getElementById('eta-badge').textContent   = '';
+            document.getElementById('current-url').textContent = '';
             const dlBtn = document.getElementById('download-btn');
             dlBtn.href = '/download/' + jobId;
             dlBtn.classList.add('visible');
             document.getElementById('convert-btn').disabled = false;
           } else if (data.status === 'error') {
             clearInterval(pollTimer);
-            setProgress('Error: ' + (data.error || 'Unknown error.'), false, 'error');
+            setProgress('❌ Error: ' + (data.error || 'Unknown error.'), 'error');
             document.getElementById('convert-btn').disabled = false;
           }
-        } catch (e) {
-          // network blip, keep polling
-        }
+        } catch (e) {}
       }, 2000);
     }
 
-    function setProgress(text, animate, type) {
-      const p   = document.getElementById('progress-text');
-      const bar = document.getElementById('bar');
-      p.textContent  = text;
-      p.className    = 'progress-text' + (type === 'error' ? ' error-text' : '');
-      if (animate) {
-        bar.classList.add('indeterminate');
+    function formatTime(secs) {
+      if (!secs) return '0s';
+      return secs >= 60 ? `${Math.floor(secs/60)}m ${secs%60}s` : `${secs}s`;
+    }
+
+    function setProgress(text, type) {
+      const p = document.getElementById('progress-text');
+      p.textContent = text;
+      p.style.color = type === 'error' ? '#f87171' : '#f1f5f9';
+      if (type !== 'error') {
+        document.getElementById('bar').classList.add('indeterminate');
       } else {
-        bar.classList.remove('indeterminate');
+        document.getElementById('bar').classList.remove('indeterminate');
       }
     }
   </script>
