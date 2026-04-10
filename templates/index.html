@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Converter</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #0a0a0f;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background-image: radial-gradient(ellipse at 20% 50%, #1a0a00 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, #001a33 0%, transparent 50%);
+      color: #f1f5f9;
+    }
+
+    .card {
+      background: #111118;
+      border: 1px solid #1f1f2e;
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .icon-wrap {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      background: color-mix(in srgb, #fb923c 15%, transparent);
+      border: 1px solid color-mix(in srgb, #fb923c 30%, transparent);
+      color: #fb923c;
+      font-size: 1.8rem;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.2rem;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.3rem; }
+    .subtitle { color: #6b7280; font-size: 0.875rem; margin-bottom: 2rem; }
+
+    label { display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 0.4rem; }
+
+    input {
+      width: 100%;
+      background: #0a0a0f;
+      border: 1px solid #1f1f2e;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #fb923c; }
+
+    button#convert-btn {
+      width: 100%;
+      background: #fb923c;
+      color: #0a0a0f;
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button#convert-btn:hover { opacity: 0.85; }
+    button#convert-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .status-box {
+      margin-top: 1.5rem;
+      background: #0a0a0f;
+      border: 1px solid #1f1f2e;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      font-size: 0.875rem;
+      color: #9ca3af;
+      display: none;
+    }
+
+    .status-box.visible { display: block; }
+
+    .progress-text { margin-bottom: 0.75rem; }
+
+    .bar-wrap {
+      background: #1f1f2e;
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .bar {
+      height: 100%;
+      background: #fb923c;
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.4s;
+    }
+    .bar.indeterminate {
+      width: 40%;
+      animation: slide 1.2s infinite ease-in-out;
+    }
+    @keyframes slide {
+      0%   { margin-left: -40%; }
+      100% { margin-left: 100%; }
+    }
+
+    .error-text { color: #f87171; }
+
+    #download-btn {
+      display: none;
+      width: 100%;
+      background: #22c55e;
+      color: #0a0a0f;
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: opacity 0.2s;
+      text-decoration: none;
+      text-align: center;
+    }
+    #download-btn:hover { opacity: 0.85; }
+    #download-btn.visible { display: block; }
+
+    footer { margin-top: 2rem; color: #374151; font-size: 0.8rem; }
+    footer a { color: #4b5563; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="icon-wrap"><i class="fa-solid fa-file-pdf"></i></div>
+    <h1>PDF Converter</h1>
+    <p class="subtitle">Crawls any documentation website and converts it to a downloadable PDF.</p>
+
+    <label for="pass-input">Password</label>
+    <input id="pass-input" type="password" placeholder="Enter password..." />
+
+    <label for="url-input">Website URL</label>
+    <input id="url-input" type="url" placeholder="https://docs.example.com" />
+
+    <button id="convert-btn" onclick="startConvert()">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>&nbsp; Convert to PDF
+    </button>
+
+    <div class="status-box" id="status-box">
+      <div class="progress-text" id="progress-text">Starting...</div>
+      <div class="bar-wrap"><div class="bar indeterminate" id="bar"></div></div>
+    </div>
+
+    <a id="download-btn" href="#"><i class="fa-solid fa-download"></i>&nbsp; Download PDF</a>
+  </div>
+
+  <footer>
+    <a href="https://abhiravgotra92.github.io/projects-hub/" target="_blank">← Back to Projects Hub</a>
+  </footer>
+
+  <script>
+    let pollTimer = null;
+
+    async function startConvert() {
+      const pass = document.getElementById('pass-input').value;
+      const url  = document.getElementById('url-input').value.trim();
+      const btn  = document.getElementById('convert-btn');
+      const box  = document.getElementById('status-box');
+      const dlBtn = document.getElementById('download-btn');
+
+      dlBtn.classList.remove('visible');
+      box.classList.add('visible');
+      setProgress('Submitting job...', true, '');
+      btn.disabled = true;
+
+      try {
+        const res  = await fetch('/convert', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({password: pass, url})
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          setProgress(data.error || 'Error.', false, 'error');
+          btn.disabled = false;
+          return;
+        }
+
+        pollStatus(data.job_id);
+      } catch (e) {
+        setProgress('Network error. Try again.', false, 'error');
+        btn.disabled = false;
+      }
+    }
+
+    function pollStatus(jobId) {
+      clearInterval(pollTimer);
+      pollTimer = setInterval(async () => {
+        try {
+          const res  = await fetch('/status/' + jobId);
+          const data = await res.json();
+
+          if (data.status === 'running' || data.status === 'queued') {
+            setProgress(data.progress || 'Working...', true, '');
+          } else if (data.status === 'done') {
+            clearInterval(pollTimer);
+            setProgress('Done! Your PDF is ready.', false, '');
+            document.getElementById('bar').style.width = '100%';
+            document.getElementById('bar').classList.remove('indeterminate');
+            const dlBtn = document.getElementById('download-btn');
+            dlBtn.href = '/download/' + jobId;
+            dlBtn.classList.add('visible');
+            document.getElementById('convert-btn').disabled = false;
+          } else if (data.status === 'error') {
+            clearInterval(pollTimer);
+            setProgress('Error: ' + (data.error || 'Unknown error.'), false, 'error');
+            document.getElementById('convert-btn').disabled = false;
+          }
+        } catch (e) {
+          // network blip, keep polling
+        }
+      }, 2000);
+    }
+
+    function setProgress(text, animate, type) {
+      const p   = document.getElementById('progress-text');
+      const bar = document.getElementById('bar');
+      p.textContent  = text;
+      p.className    = 'progress-text' + (type === 'error' ? ' error-text' : '');
+      if (animate) {
+        bar.classList.add('indeterminate');
+      } else {
+        bar.classList.remove('indeterminate');
+      }
+    }
+  </script>
+
+</body>
+</html>

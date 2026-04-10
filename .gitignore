@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pdf
+img_cache/
+Scripts/
+.env
+tmp/
