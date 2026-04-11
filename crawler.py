@@ -436,3 +436,11 @@ async def run(url, work_dir, progress_cb=None):
     if not visited:
         raise RuntimeError("No pages were crawled.")
     return build_pdf(cfg, visited), cfg.domain
+
+
+async def crawl_only(url, work_dir, progress_cb=None):
+    cfg     = setup(url, work_dir)
+    visited = await crawl(cfg, progress_cb)
+    if not visited:
+        raise RuntimeError("No pages were crawled.")
+    return visited, cfg.domain
